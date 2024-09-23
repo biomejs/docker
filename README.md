@@ -9,7 +9,7 @@ Supported variants: [`debian`](docker/debian.Dockerfile), [`alpine`](docker/alpi
 
 ## Supported tags
 
-All versions of Biome start from `1.7.0` have Docker images available.
+All versions of Biome starting from `1.7.0` have Docker images available.
 
 ```sh
 # Default (bookworm)
