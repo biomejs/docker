@@ -8,9 +8,13 @@ on:
   push:
     branches:
       - main
+    paths: 
+      - "docker/**"
   pull_request:
     branches:
       - main
+    paths: 
+      - "docker/**"
 
 jobs:
 
@@ -99,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v6
         id: push
         with:
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }} 
           file: docker/${{ matrix.os.name }}.Dockerfile
