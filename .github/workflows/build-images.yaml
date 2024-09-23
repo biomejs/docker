@@ -1,0 +1,112 @@
+name: Build Docker images
+
+on:
+  workflow_dispatch:
+  schedule:
+    # run every sunday at midnight
+    - cron: "0 0 * * 0"
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  generate-jobs:
+    name: Generate jobs
+    runs-on: ubuntu-latest
+    outputs:
+      biome-versions: ${{ steps.matrix.outputs.BIOME_VERSIONS }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+      - name: Install dependencies
+        run: bun install
+      - name: Generate matrix
+        id: matrix
+        run: |
+          BIOME_VERSIONS=$(bun run ./scripts/generate-versions.ts)
+          echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
+
+  build-images:
+    name: Biome ${{ matrix.biome-version.version }} (${{ matrix.os.name }}, ${{ matrix.os.version }})
+    needs: generate-jobs
+    concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.os.name }}-${{ matrix.os.version }}
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        os:
+          - name: alpine
+            version: "3.20"
+            suffix: "alpine3.20"
+          - name: alpine
+            version: "3.19"
+            suffix: "alpine3.19"
+          - name: debian
+            version: "bookworm"
+            suffix: "bookworm"
+          - name: debian
+            version: "bullseye"
+            suffix: "bullseye"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/biomejs/biome
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ matrix.biome-version.version }}-${{ matrix.os.suffix }}
+            type=raw,value=${{ matrix.biome-version.version }},enable=${{ matrix.os.suffix == 'bookworm' }}
+
+            type=raw,value=${{ matrix.biome-version.version }}-alpine,enable=${{ matrix.os.suffix == 'alpine3.20' }}
+
+            type=raw,value=${{ matrix.biome-version.majorAlias }}-${{ matrix.os.suffix }},enable=${{ matrix.biome-version.createMajorAlias }}
+            type=raw,value=${{ matrix.biome-version.majorAlias }},enable=${{ matrix.biome-version.createMajorAlias && matrix.os.suffix == 'bookworm' }}
+
+            type=raw,value=${{ matrix.biome-version.minorAlias }}-${{ matrix.os.suffix }},enable=${{ matrix.biome-version.createMinorAlias }}
+            type=raw,value=${{ matrix.biome-version.minorAlias }},enable=${{ matrix.biome-version.createMinorAlias && matrix.os.suffix == 'bookworm' }}
+
+            type=raw,value=latest,enable=${{ matrix.biome-version.version == fromJson(needs.generate-jobs.outputs.biome-versions)[0].version && matrix.os.name == 'debian' && matrix.os.version == 'bookworm' }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        id: push
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }} 
+          file: docker/${{ matrix.os.name }}.Dockerfile
+          context: ./docker
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BIOME_VERSION=${{ matrix.biome-version.version }}
+            ALPINE_VERSION=${{ matrix.os.version }}
+            DEBIAN_VERSION=${{ matrix.os.version }}
