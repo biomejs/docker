@@ -58,4 +58,4 @@ docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome format --
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.md).
