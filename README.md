@@ -5,7 +5,7 @@ for all recent versions of [Biome](https://github.com/biomejs/biome).
 
 Supported architectures: `amd64`, `arm64`
 
-Supported variants: [`debian`](docker/debian.Dockerfile), [`alpine`](docker/alpine.Dockerfile)
+OS variants: [`debian`](docker/debian.Dockerfile), [`alpine`](docker/alpine.Dockerfile)
 
 ## Supported tags
 
