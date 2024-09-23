@@ -1,4 +1,4 @@
-# Biome for Docker
+# Docker images for Biome
 
 This repository contains the Dockerfiles and workflows to build Docker images
 for all recent versions of [Biome](https://github.com/biomejs/biome).
