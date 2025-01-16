@@ -47,6 +47,7 @@ jobs:
     strategy:
       matrix:
         biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        runs-on: [ubuntu-22.04, ubuntu-22.04-arm]
         os:
           - name: alpine
             version: "3.20"
@@ -99,12 +100,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push (amd64)
         uses: docker/build-push-action@v6
         id: push
+        if: matrix.runs-on == 'ubuntu-22.04'
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }} 
+          file: docker/${{ matrix.os.name }}.Dockerfile
+          context: ./docker
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BIOME_VERSION=${{ matrix.biome-version.version }}
+            ALPINE_VERSION=${{ matrix.os.version }}
+            DEBIAN_VERSION=${{ matrix.os.version }}
+      
+      - name: Build and push (arm64)
+        uses: docker/build-push-action@v6
+        id: push-arm
+        if: matrix.runs-on == 'ubuntu-22.04-arm'
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/arm64
           tags: ${{ steps.meta.outputs.tags }} 
           file: docker/${{ matrix.os.name }}.Dockerfile
           context: ./docker
