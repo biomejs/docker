@@ -13,8 +13,8 @@ on:
   pull_request:
     branches:
       - main
-    paths: 
-      - "docker/**"
+    # paths: 
+    #   - "docker/**"
 
 jobs:
 
