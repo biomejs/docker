@@ -39,7 +39,7 @@ jobs:
     concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.runs-on }}
     permissions:
       packages: write
-    runs-on: ${{ matrix.runs-on }})
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       matrix:
         biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
