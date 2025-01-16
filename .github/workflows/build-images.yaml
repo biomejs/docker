@@ -34,7 +34,7 @@ jobs:
           echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
 
   build-images:
-    name: Biome ${{ matrix.biome-version.version }} (${{ matrix.os.name }}, ${{ matrix.os.version }})
+    name: Biome ${{ matrix.biome-version.version }} (${{ matrix.os.name }}, ${{ matrix.os.version }}, ${{ matrix.runs-on }})
     needs: generate-jobs
     concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.os.name }}-${{ matrix.os.version }}
     permissions:
