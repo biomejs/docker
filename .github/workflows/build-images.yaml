@@ -7,14 +7,10 @@ on:
     - cron: "0 0 * * 0"
   push:
     branches:
-      - main
-    paths: 
-      - "docker/**"
+      - mainå
   pull_request:
     branches:
       - main
-    # paths: 
-    #   - "docker/**"
 
 jobs:
 
