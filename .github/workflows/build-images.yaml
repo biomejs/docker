@@ -34,9 +34,9 @@ jobs:
           echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
 
   build-images:
-    name: Biome ${{ matrix.biome-version.version }} (${{ matrix.os.name }}, ${{ matrix.os.version }}, ${{ matrix.runs-on }})
+    name: ${{ matrix.biome-version.version }} (${{ matrix.os.name }}, ${{ matrix.os.version }}, ${{ matrix.runs-on }})
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.os.name }}-${{ matrix.os.version }}
+    concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.os.name }}-${{ matrix.os.version }}-${{ matrix.runs-on }}
     permissions:
       packages: write
     runs-on: ubuntu-latest
