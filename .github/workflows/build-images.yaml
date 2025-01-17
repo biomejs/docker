@@ -45,10 +45,10 @@ jobs:
         biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
         include:
           - variant: alpine
-            version: 3.20
+            version: "3.20"
             runner: ubuntu-22.04
           - variant: alpine
-            version: 3.20
+            version: "3.20"
             runner: ubuntu-22.04-arm
           - variant: debian
             version: bookworm
