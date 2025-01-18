@@ -20,10 +20,8 @@ RUN tar -xzvf /tmp/biome.tar.gz -C /usr/src/biome/ --strip-components=1
 ENV RUSTFLAGS="-C strip=symbols"
 RUN cargo build -p biome_cli --release
 
-FROM alpine:${ALPINE_VERSION} AS biome
+FROM scratch AS biome
 
 COPY --from=builder /usr/src/biome/target/release/biome /usr/local/bin/biome
-
-WORKDIR /workspace
 
 ENTRYPOINT [ "/usr/local/bin/biome" ]

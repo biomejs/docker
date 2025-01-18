@@ -33,112 +33,83 @@ jobs:
           echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
 
   build-images-arm64:
-    name: ${{ matrix.biome-version.version }} (${{ matrix.variant }})
+    name: ${{ matrix.version }} (arm64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.variant }}-arm64
+    concurrency: build-images-${{ matrix.version }}-arm64
     permissions:
       packages: write
     runs-on: ubuntu-22.04-arm
     strategy:
       matrix:
-        variant: [alpine, debian]
-        biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
-        include:
-          - variant: alpine
-            version: "3.20"
-            runner: ubuntu-22.04
-          - variant: alpine
-            version: "3.20"
-            runner: ubuntu-22.04-arm
-          - variant: debian
-            version: bookworm
-            runner: ubuntu-22.04
-          - variant: debian
-            version: bookworm
-            runner: ubuntu-22.04-arm
+        version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/biomejs/biome
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=${{ matrix.biome-version.version }}-${{ matrix.variant }}-arm64
-
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build and push
         uses: docker/build-push-action@v6
-        id: push
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           platforms: linux/arm64
-          tags: ${{ steps.meta.outputs.tags }} 
-          file: docker/${{ matrix.variant }}.Dockerfile
-          context: ./docker
+          tags: ghcr.io/biomejs/biome:${{ matrix.version }}-arm64
+          file: Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BIOME_VERSION=${{ matrix.biome-version.version }}
-            ALPINE_VERSION=${{ matrix.version }}
-            DEBIAN_VERSION=${{ matrix.version }}
+            BIOME_VERSION=${{ matrix.version }}
 
   build-images-amd64:
-    name: ${{ matrix.biome-version.version }} (${{ matrix.variant }})
+    name: ${{ matrix.version }} (amd64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.biome-version.version }}-${{ matrix.variant }}-amd64
+    concurrency: build-images-${{ matrix.version }}-amd64
     permissions:
       packages: write
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        variant: [alpine, debian]
-        biome-version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
-        include:
-          - variant: alpine
-            version: "3.20"
-            runner: ubuntu-22.04
-          - variant: alpine
-            version: "3.20"
-            runner: ubuntu-22.04-arm
-          - variant: debian
-            version: bookworm
-            runner: ubuntu-22.04
-          - variant: debian
-            version: bookworm
-            runner: ubuntu-22.04-arm
+        version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
         with:
-          images: |
-            ghcr.io/biomejs/biome
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=${{ matrix.biome-version.version }}-${{ matrix.variant }}-amd64
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          platforms: linux/amd64
+          tags: ghcr.io/biomejs/biome:${{ matrix.version }}-amd64
+          file: Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BIOME_VERSION=${{ matrix.version }}  
 
+  stitch-images:
+    name: Stitch images
+    needs: [generate-jobs, build-images-arm64, build-images-amd64]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        biome-versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -146,19 +117,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        id: push
-        with:
-          push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64
-          tags: ${{ steps.meta.outputs.tags }} 
-          file: docker/${{ matrix.variant }}.Dockerfile
-          context: ./docker
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            BIOME_VERSION=${{ matrix.biome-version.version }}
-            ALPINE_VERSION=${{ matrix.version }}
-            DEBIAN_VERSION=${{ matrix.version }}
-    
+      - name: Create ${{ matrix.biome-versions.version }} manifests
+        run: |
+          docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }} \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }}-amd64
+          docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }} \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }}-amd64
+          docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }} \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }}-amd64
+
+      - name: Create latest manifest
+        if: ${{ matrix.biome-versions.version == fromJson(needs.generate-jobs.outputs.biome-versions)[0].version }}
+        run: |
+          docker manifest create ghcr.io/biomejs/biome:latest \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-amd64
+
+      - name: Push ${{ matrix.biome-versions.version }} manifests
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }}
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }}
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }}
+
+      - name: Push latest manifest
+        if: ${{ github.event_name != 'pull_request' && matrix.biome-versions.version == fromJson(needs.generate-jobs.outputs.biome-versions)[0].version }}
+        run: |
+          docker manifest push ghcr.io/biomejs/biome:latest
+      
