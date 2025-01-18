@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-22.04-arm
     strategy:
       matrix:
-        version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        biome-versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,23 +58,23 @@ jobs:
         with:
           push: false
           platforms: linux/arm64
-          tags: ghcr.io/biomejs/biome:${{ matrix.version }}-arm64
+          tags: ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-arm64
           file: Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BIOME_VERSION=${{ matrix.version }}
+            BIOME_VERSION=${{ matrix.biome-versions.version }}
 
   build-images-amd64:
-    name: ${{ matrix.version }} (amd64)
+    name: ${{ matrix.biome-versions.version }} (amd64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.version }}-amd64
+    concurrency: build-images-${{ matrix.biome-versions.version }}-amd64
     permissions:
       packages: write
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        version: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        biome-versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,12 +91,12 @@ jobs:
         with:
           push: false
           platforms: linux/amd64
-          tags: ghcr.io/biomejs/biome:${{ matrix.version }}-amd64
+          tags: ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-amd64
           file: Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BIOME_VERSION=${{ matrix.version }}  
+            BIOME_VERSION=${{ matrix.biome-versions.version }}  
 
   stitch-images:
     name: Stitch images
@@ -120,14 +120,14 @@ jobs:
       - name: Create ${{ matrix.biome-versions.version }} manifests
         run: |
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }} \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.majorVersion }}-amd64
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-amd64
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }} \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.minorVersion }}-amd64
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-amd64
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }} \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.biome-versions.patchVersion }}-amd64
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-arm64 \
+            ghcr.io/biomejs/biome:${{ matrix.biome-versions.version }}-amd64
 
       - name: Create latest manifest
         if: ${{ matrix.biome-versions.version == fromJson(needs.generate-jobs.outputs.biome-versions)[0].version }}
