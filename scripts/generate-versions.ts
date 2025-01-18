@@ -91,14 +91,13 @@ const greatestPatchForMajorMinor =
  * Generate a list of all verions of Biome for which we want to create
  * Docker images.
  */
-export const versions = semverVersions.map((version) => ({
-	version: version.format(),
-	patchVersion: version.format(),
-	majorAlias: `${version.major}`,
-	createMajorAlias:
+export const versions = semverVersions.map((version: SemVer) => ({
+	major: `${version.major}`,
+	minor: `${version.major}.${version.minor}`,
+	patch: version.format(),
+	createMajor:
 		greatestMinorForMajor.get(`${version.major}`) === version.format(),
-	minorAlias: `${version.major}.${version.minor}`,
-	createMinorAlias:
+	createMinor:
 		greatestPatchForMajorMinor.get(`${version.major}.${version.minor}`) ===
 		version.format(),
 }));
