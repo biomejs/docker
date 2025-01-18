@@ -89,7 +89,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          push: false
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
           tags: ghcr.io/biomejs/biome:${{ github.sha }}-amd64
           file: Dockerfile
