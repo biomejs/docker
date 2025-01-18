@@ -93,6 +93,7 @@ const greatestPatchForMajorMinor =
  */
 export const versions = semverVersions.map((version) => ({
 	version: version.format(),
+	patchVersion: version.format(),
 	majorAlias: `${version.major}`,
 	createMajorAlias:
 		greatestMinorForMajor.get(`${version.major}`) === version.format(),
