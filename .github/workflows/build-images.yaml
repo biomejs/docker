@@ -33,9 +33,9 @@ jobs:
           echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
 
   build-images-arm64:
-    name: ${{ matrix.version }} (arm64)
+    name: ${{ matrix.biome-versions.version }} (arm64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.version }}-arm64
+    concurrency: build-images-${{ matrix.biome-versions.version }}-arm64
     permissions:
       packages: write
     runs-on: ubuntu-22.04-arm
