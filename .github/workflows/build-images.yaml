@@ -102,6 +102,7 @@ jobs:
     name: Stitch images (${{ matrix.versions.patch }})
     needs: [generate-jobs, build-images-arm64, build-images-amd64]
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       matrix:
         versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
@@ -123,6 +124,7 @@ jobs:
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.major }} \
             ghcr.io/biomejs/biome:${{ github.sha }}-arm64 \
             ghcr.io/biomejs/biome:${{ github.sha }}-amd64
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.major }}
 
       - name: Create minor version (${{ matrix.versions.minor }}) manifest
         if: ${{ matrix.versions.createMinor }}
@@ -130,12 +132,14 @@ jobs:
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.minor }} \
             ghcr.io/biomejs/biome:${{ github.sha }}-arm64 \
             ghcr.io/biomejs/biome:${{ github.sha }}-amd64
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.minor }}
 
       - name: Create patch version (${{ matrix.versions.patch }}) manifest
         run: |
           docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.patch }} \
             ghcr.io/biomejs/biome:${{ github.sha }}-arm64 \
             ghcr.io/biomejs/biome:${{ github.sha }}-amd64
+          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.patch }}
 
       - name: Create latest (${{ matrix.versions.patch }}) manifest
         if: ${{ matrix.versions.patch == fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
@@ -143,23 +147,5 @@ jobs:
           docker manifest create ghcr.io/biomejs/biome:latest \
             ghcr.io/biomejs/biome:${{ github.sha }}-arm64 \
             ghcr.io/biomejs/biome:${{ github.sha }}-amd64
-
-      - name: Push major version (${{ matrix.versions.major }}) manifest
-        if: ${{ github.event_name != 'pull_request' }} && matrix.biome-versions.createMajor
-        run: |
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.major }}
-
-      - name: Push minor version (${{ matrix.versions.minor }}) manifest
-        if: ${{ github.event_name != 'pull_request' }} && matrix.versions.createMinor
-        run: |
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.minor }}
-
-      - name: Push patch version (${{ matrix.versions.patch }}) manifest
-        run: |
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.patch }}
-
-      - name: Push latest manifest
-        if: ${{ github.event_name != 'pull_request' && matrix.versions.patch == fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
-        run: |
           docker manifest push ghcr.io/biomejs/biome:latest
       

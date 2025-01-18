@@ -1,42 +1,27 @@
 # Docker images for Biome
 
-This repository contains the Dockerfiles and workflows to build Docker images
-for all recent versions of [Biome](https://github.com/biomejs/biome).
+This repository contain the source code for building the official Docker images
+for Biome.
 
 Supported architectures: `amd64`, `arm64`
 
-OS variants: [`debian`](docker/debian.Dockerfile), [`alpine`](docker/alpine.Dockerfile)
-
 ## Supported tags
 
-All versions of Biome starting from `1.7.0` have Docker images available.
+Docker images are available for all versions of Biome starting from `1.7.0`.
+
+Images are tagged with the following format:
 
 ```sh
-# Default (bookworm)
-ghcr.io/biomejs/biome:{version}
-
-# Variants
-ghcr.io/biomejs/biome:{version}-{variant}
+ghcr.io/biomejs/biome:{major}
+ghcr.io/biomejs/biome:{major}{minor}
+ghcr.io/biomejs/biome:{major}{minor}{patch}
 ```
-
-Where `{variant}` is one of the following: `bookworm`, `bullseye`, `alpine3.20`, `alpine3.19`.
 
 ### Examples
 - `ghcr.io/biomejs/biome:1`
 - `ghcr.io/biomejs/biome:1.9`
-- `ghcr.io/biomejs/biome:1.9.2`
-- `ghcr.io/biomejs/biome:1-bookworm`
-- `ghcr.io/biomejs/biome:1.9-bookworm`
-- `ghcr.io/biomejs/biome:1.9.2-bookworm`
-- `ghcr.io/biomejs/biome:1-bullseye`
-- `ghcr.io/biomejs/biome:1.9-bullseye`
-- `ghcr.io/biomejs/biome:1.9.2-bullseye`
-- `ghcr.io/biomejs/biome:1-alpine3.19`
-- `ghcr.io/biomejs/biome:1.9-alpine3.19`
-- `ghcr.io/biomejs/biome:1.9.2-alpine3.19`
-- `ghcr.io/biomejs/biome:1-alpine3.20`
-- `ghcr.io/biomejs/biome:1.9-alpine3.20`
-- `ghcr.io/biomejs/biome:1.9.2-alpine3.20`
+- `ghcr.io/biomejs/biome:1.9.4`
+- `ghcr.io/biomejs/biome:latest`
 
 ## Usage
 
@@ -44,16 +29,16 @@ All images have their entrypoint set to `biome`.
 
 ```sh
 # Check files
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome check
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome check --write
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome check
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome check --write
 
 # Lint files
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome lint
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome lint --write
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome lint
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome lint --write
 
-# Formatting files
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome format
-docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.2 biome format --write
+# Format files
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome format
+docker run --rm -v $(pwd):/workspace ghcr.io/biomejs/biome:1.9.4 biome format --write
 ```
 
 ## License
