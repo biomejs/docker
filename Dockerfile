@@ -24,6 +24,10 @@ FROM alpine:${ALPINE_VERSION} AS biome
 
 COPY --from=builder /usr/src/biome/target/release/biome /usr/local/bin/biome
 
+# Install git and flag to repo safe
+RUN apk add --no-cache git
+RUN git config --global --add safe.directory /code
+
 WORKDIR /code
 
 ENTRYPOINT [ "/usr/local/bin/biome" ]
