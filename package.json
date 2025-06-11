@@ -1,16 +1,16 @@
 {
-        "name": "biome-docker",
-        "type": "module",
-        "devDependencies": {
-                "@types/bun": "latest",
-                "@types/semver": "^7.5.8"
-        },
-        "peerDependencies": {
-                "typescript": "^5.0.0"
-        },
-        "dependencies": {
-                "@biomejs/biome": "^1.9.4",
-                "@biomejs/version-utils": "^0.4.0",
-                "semver": "^7.6.3"
-        }
+	"name": "biome-docker",
+	"type": "module",
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/semver": "^7.5.8"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@biomejs/version-utils": "^0.4.0",
+		"semver": "^7.7.2"
+	}
 }

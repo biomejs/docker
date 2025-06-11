@@ -3,7 +3,10 @@ ARG ALPINE_VERSION=3.20
 FROM rust:1.81.0-alpine${ALPINE_VERSION} AS builder
 
 ARG BIOME_VERSION=1.9.2
+ARG BIOME_TAG_START="cli/v"
+
 ENV BIOME_VERSION=${BIOME_VERSION}
+ENV BIOME_TAG_START=${BIOME_TAG_START}
 
 WORKDIR /usr/src/biome
 
@@ -11,7 +14,7 @@ WORKDIR /usr/src/biome
 RUN apk add --no-cache musl-dev make
 
 # Downloads the tarball for the version of Biome we want to build from GitHub Releases
-ADD https://github.com/biomejs/biome/archive/refs/tags/cli/v${BIOME_VERSION}.tar.gz /tmp/biome.tar.gz
+ADD https://github.com/biomejs/biome/archive/refs/tags/${BIOME_TAG_START}${BIOME_VERSION}.tar.gz /tmp/biome.tar.gz
 
 # Extract the tarball into the working directory
 RUN tar -xzvf /tmp/biome.tar.gz -C /usr/src/biome/ --strip-components=1

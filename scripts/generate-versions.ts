@@ -3,10 +3,13 @@ import { type SemVer, coerce, gt, gte } from "semver";
 
 const yankedVersions: string[] = [];
 
-const semverVersions = ((await getAllVersions(false)) ?? [])
-	?.map((v) => coerce(v))
+const semverVersions = ((await getAllVersions(true)) ?? [])
+	?.map((v) => coerce(v, { includePrerelease: true }))
 	.filter((v) => v !== null)
 	.filter((v) => gte(v, "1.7.0"))
+	.filter(
+		(v) => !v.prerelease.some((pre) => pre.toString().includes("nightly")),
+	)
 	.filter((v) => !yankedVersions.includes(v.format()));
 
 const getGreatestMinorForMajor = (versions: SemVer[]): Map<string, string> => {
@@ -90,16 +93,21 @@ const greatestPatchForMajorMinor =
 /**
  * Generate a list of all verions of Biome for which we want to create
  * Docker images.
+ *
+ * For beta versions, we only create images for the patch versions.
  */
-export const versions = semverVersions.map((version: SemVer) => ({
-	major: `${version.major}`,
-	minor: `${version.major}.${version.minor}`,
-	patch: version.format(),
-	createMajor:
-		greatestMinorForMajor.get(`${version.major}`) === version.format(),
-	createMinor:
-		greatestPatchForMajorMinor.get(`${version.major}.${version.minor}`) ===
-		version.format(),
-}));
+export const versions = semverVersions.map((version: SemVer) => {
+	return {
+		major: `${version.major}`,
+		minor: `${version.major}.${version.minor}`,
+		patch: version.format(),
+		createMajor:
+			greatestMinorForMajor.get(`${version.major}`) === version.format() &&
+			!version.prerelease.includes("beta"),
+		createMinor:
+			greatestPatchForMajorMinor.get(`${version.major}.${version.minor}`) ===
+				version.format() && !version.prerelease.includes("beta"),
+	};
+});
 
 console.log(JSON.stringify(versions));

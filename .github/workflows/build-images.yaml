@@ -13,7 +13,6 @@ on:
       - main
 
 jobs:
-
   generate-jobs:
     name: Generate jobs
     runs-on: ubuntu-latest
@@ -65,6 +64,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64
           build-args: |
             BIOME_VERSION=${{ matrix.versions.patch }}
+            BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
 
   build-images-amd64:
     name: ${{ matrix.versions.patch }} (amd64)
@@ -98,7 +98,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-amd64
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64
           build-args: |
-            BIOME_VERSION=${{ matrix.versions.patch }}  
+            BIOME_VERSION=${{ matrix.versions.patch }}
+            BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
 
   stitch-images:
     name: Stitch images (${{ matrix.versions.patch }})
@@ -146,7 +147,9 @@ jobs:
           docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.patch }}
 
       - name: Create latest (${{ matrix.versions.patch }}) manifest
-        if: ${{ matrix.versions.patch == fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
+        if:
+          ${{ matrix.versions.patch ==
+          fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
         run: |
           docker manifest create ghcr.io/biomejs/biome:latest \
             ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 \
