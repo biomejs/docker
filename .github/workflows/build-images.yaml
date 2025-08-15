@@ -2,9 +2,8 @@ name: Build Docker images
 
 on:
   workflow_dispatch:
-  schedule:
-    # run every sunday at midnight
-    - cron: "0 0 * * 0"
+  repository_dispatch:
+    types: [biome-release-cli-event]
   push:
     branches:
       - main
