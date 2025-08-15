@@ -3,7 +3,7 @@ name: Build Docker images
 on:
   workflow_dispatch:
   schedule:
-    # run every sunday at midnight
+    # run every day at midnight
     - cron: "0 0 * * *"
   push:
     branches:
