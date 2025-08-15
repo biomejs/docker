@@ -3,7 +3,7 @@ name: Build Docker images
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [build_images]
+    types: [biome-release-cli-event]
   push:
     branches:
       - main
