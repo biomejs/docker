@@ -55,6 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
           provenance: false
           platforms: linux/arm64
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64
@@ -62,8 +63,12 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-arm64
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64
           build-args: |
+            ARCH=arm64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
+      - name: Verify image
+        run: |
+          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 --version
 
   build-images-amd64:
     name: ${{ matrix.versions.patch }} (amd64)
@@ -90,6 +95,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
           provenance: false
           platforms: linux/amd64
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
@@ -97,8 +103,12 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-amd64
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64
           build-args: |
+            ARCH=x64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
+      - name: Verify image
+        run: |
+          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64 --version
 
   stitch-images:
     name: Stitch images (${{ matrix.versions.patch }})
