@@ -3,14 +3,14 @@
 	"type": "module",
 	"devDependencies": {
 		"@types/bun": "latest",
-		"@types/semver": "^7.5.8"
+		"@types/semver": "7.7.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
 	},
 	"dependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@biomejs/version-utils": "^0.4.0",
-		"semver": "^7.7.2"
+		"@biomejs/biome": "2.2.6",
+		"@biomejs/version-utils": "0.4.0",
+		"semver": "7.7.3"
 	}
 }
