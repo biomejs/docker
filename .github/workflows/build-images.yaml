@@ -66,7 +66,7 @@ jobs:
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
         run: |
-          docker run --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 --version
+          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 --version
 
   build-images-amd64:
     name: ${{ matrix.versions.patch }} (amd64)
@@ -104,7 +104,7 @@ jobs:
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
         run: |
-          docker run --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64 --version
+          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64 --version
 
   stitch-images:
     name: Stitch images (${{ matrix.versions.patch }})
