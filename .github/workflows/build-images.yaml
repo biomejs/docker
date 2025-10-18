@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
+          load: true
           provenance: false
           platforms: linux/arm64
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64
@@ -95,7 +95,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
+          load: true
           provenance: false
           platforms: linux/amd64
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
