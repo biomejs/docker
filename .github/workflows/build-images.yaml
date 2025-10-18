@@ -63,6 +63,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-arm64
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64
           build-args: |
+            ARCH=arm64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
@@ -102,6 +103,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-amd64
           cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64
           build-args: |
+            ARCH=amd64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
