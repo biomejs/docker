@@ -11,6 +11,9 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: ghcr.io/biomejs/biome
+
 jobs:
   generate-jobs:
     name: Generate jobs
@@ -31,15 +34,19 @@ jobs:
           echo "BIOME_VERSIONS=$BIOME_VERSIONS" >> $GITHUB_OUTPUT
 
   build-images-arm64:
-    name: ${{ matrix.versions.patch }} (arm64)
+    name: ${{ matrix.versions.patch }} (${{ matrix.variant }}, arm64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.versions.patch }}-arm64
+    concurrency: build-images-${{ matrix.versions.patch }}-${{ matrix.variant }}-arm64
     permissions:
       packages: write
     runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
         versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        variant:
+          - distroless
+          - alpine
+          - debian
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -51,6 +58,34 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare variant metadata
+        id: variant
+        run: |
+          case "${{ matrix.variant }}" in
+            distroless)
+              TARGET=distroless
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-distroless-arm64"
+              TAGS="${INTERNAL_TAG}"$'\n'"${IMAGE_NAME}:${{ matrix.versions.patch }}-arm64"
+              ;;
+            alpine)
+              TARGET=alpine
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-alpine-arm64"
+              TAGS="${INTERNAL_TAG}"
+              ;;
+            debian)
+              TARGET=debian
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-debian-arm64"
+              TAGS="${INTERNAL_TAG}"
+              ;;
+          esac
+
+          {
+            echo "target=${TARGET}"
+            echo "internal_tag=${INTERNAL_TAG}"
+            echo 'tags<<EOF'
+            printf '%s\n' "${TAGS}"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
@@ -58,28 +93,36 @@ jobs:
           load: true
           provenance: false
           platforms: linux/arm64
-          tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64
+          tags: ${{ steps.variant.outputs.tags }}
+          target: ${{ steps.variant.outputs.target }}
           file: Dockerfile
-          cache-from: type=gha,scope=${{ matrix.versions.patch}}-arm64
-          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64
+          cache-from: type=gha,scope=${{ matrix.versions.patch}}-${{ matrix.variant }}-arm64
+          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-${{ matrix.variant }}-arm64
           build-args: |
             ARCH=arm64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
         run: |
-          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 --version
+          docker run --pull=never --rm ${{ steps.variant.outputs.internal_tag }} --version
+          docker run --pull=never --rm --entrypoint /usr/bin/git ${{ steps.variant.outputs.internal_tag }} --version
+          docker run --pull=never --rm -v "$PWD":/code --entrypoint /usr/bin/git ${{ steps.variant.outputs.internal_tag }} status --short
+          docker run --pull=never --rm -v "$PWD":/code ${{ steps.variant.outputs.internal_tag }} check biome.json
 
   build-images-amd64:
-    name: ${{ matrix.versions.patch }} (amd64)
+    name: ${{ matrix.versions.patch }} (${{ matrix.variant }}, amd64)
     needs: generate-jobs
-    concurrency: build-images-${{ matrix.versions.patch }}-amd64
+    concurrency: build-images-${{ matrix.versions.patch }}-${{ matrix.variant }}-amd64
     permissions:
       packages: write
     runs-on: ubuntu-24.04
     strategy:
       matrix:
         versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
+        variant:
+          - distroless
+          - alpine
+          - debian
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -91,6 +134,34 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare variant metadata
+        id: variant
+        run: |
+          case "${{ matrix.variant }}" in
+            distroless)
+              TARGET=distroless
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-distroless-amd64"
+              TAGS="${INTERNAL_TAG}"$'\n'"${IMAGE_NAME}:${{ matrix.versions.patch }}-amd64"
+              ;;
+            alpine)
+              TARGET=alpine
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-alpine-amd64"
+              TAGS="${INTERNAL_TAG}"
+              ;;
+            debian)
+              TARGET=debian
+              INTERNAL_TAG="${IMAGE_NAME}:${{ matrix.versions.patch }}-debian-amd64"
+              TAGS="${INTERNAL_TAG}"
+              ;;
+          esac
+
+          {
+            echo "target=${TARGET}"
+            echo "internal_tag=${INTERNAL_TAG}"
+            echo 'tags<<EOF'
+            printf '%s\n' "${TAGS}"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
@@ -98,17 +169,21 @@ jobs:
           load: true
           provenance: false
           platforms: linux/amd64
-          tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
+          tags: ${{ steps.variant.outputs.tags }}
+          target: ${{ steps.variant.outputs.target }}
           file: Dockerfile
-          cache-from: type=gha,scope=${{ matrix.versions.patch}}-amd64
-          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64
+          cache-from: type=gha,scope=${{ matrix.versions.patch}}-${{ matrix.variant }}-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-${{ matrix.variant }}-amd64
           build-args: |
             ARCH=x64
             BIOME_VERSION=${{ matrix.versions.patch }}
             BIOME_TAG_START=${{ matrix.versions.major == '2' && '@biomejs/biome@' || 'cli/v'  }}
       - name: Verify image
         run: |
-          docker run --pull=never --rm ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64 --version
+          docker run --pull=never --rm ${{ steps.variant.outputs.internal_tag }} --version
+          docker run --pull=never --rm --entrypoint /usr/bin/git ${{ steps.variant.outputs.internal_tag }} --version
+          docker run --pull=never --rm -v "$PWD":/code --entrypoint /usr/bin/git ${{ steps.variant.outputs.internal_tag }} status --short
+          docker run --pull=never --rm -v "$PWD":/code ${{ steps.variant.outputs.internal_tag }} check biome.json
 
   stitch-images:
     name: Stitch images (${{ matrix.versions.patch }})
@@ -131,36 +206,48 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create major version (${{ matrix.versions.major }}) manifest
-        if: ${{ matrix.versions.createMajor }}
+      - name: Create image manifests
+        env:
+          PATCH: ${{ matrix.versions.patch }}
+          MAJOR: ${{ matrix.versions.major }}
+          MINOR: ${{ matrix.versions.minor }}
+          CREATE_MAJOR: ${{ matrix.versions.createMajor }}
+          CREATE_MINOR: ${{ matrix.versions.createMinor }}
+          IS_LATEST: ${{ matrix.versions.patch == fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
         run: |
-          docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.major }} \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.major }}
+          create_manifest() {
+            local public_tag="$1"
+            local variant="$2"
+            local destination="${IMAGE_NAME}:${public_tag}"
 
-      - name: Create minor version (${{ matrix.versions.minor }}) manifest
-        if: ${{ matrix.versions.createMinor }}
-        run: |
-          docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.minor }} \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.minor }}
+            if [ "${variant}" != "distroless" ]; then
+              destination="${destination}-${variant}"
+            fi
 
-      - name: Create patch version (${{ matrix.versions.patch }}) manifest
-        run: |
-          docker manifest create ghcr.io/biomejs/biome:${{ matrix.versions.patch }} \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
-          docker manifest push ghcr.io/biomejs/biome:${{ matrix.versions.patch }}
+            docker manifest create "${destination}" \
+              "${IMAGE_NAME}:${PATCH}-${variant}-arm64" \
+              "${IMAGE_NAME}:${PATCH}-${variant}-amd64"
+            docker manifest push "${destination}"
+          }
 
-      - name: Create latest (${{ matrix.versions.patch }}) manifest
-        if:
-          ${{ matrix.versions.patch ==
-          fromJson(needs.generate-jobs.outputs.biome-versions)[0].patch }}
-        run: |
-          docker manifest create ghcr.io/biomejs/biome:latest \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64 \
-            ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
-          docker manifest push ghcr.io/biomejs/biome:latest
+          if [ "${CREATE_MAJOR}" = "true" ]; then
+            create_manifest "${MAJOR}" distroless
+            create_manifest "${MAJOR}" alpine
+            create_manifest "${MAJOR}" debian
+          fi
+
+          if [ "${CREATE_MINOR}" = "true" ]; then
+            create_manifest "${MINOR}" distroless
+            create_manifest "${MINOR}" alpine
+            create_manifest "${MINOR}" debian
+          fi
+
+          create_manifest "${PATCH}" distroless
+          create_manifest "${PATCH}" alpine
+          create_manifest "${PATCH}" debian
+
+          if [ "${IS_LATEST}" = "true" ]; then
+            create_manifest latest distroless
+            create_manifest latest alpine
+            create_manifest latest debian
+          fi
