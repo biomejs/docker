@@ -1,7 +1,7 @@
 import { getAllVersions } from "@biomejs/version-utils";
 import { coerce, gt, gte, type SemVer } from "semver";
 
-const yankedVersions: string[] = ["2.0.1", "2.0.2", "2.0.3"];
+const yankedVersions: string[] = ["2.0.1", "2.0.2", "2.0.3", "2.6.0", "2.6.1"];
 
 const semverVersions = ((await getAllVersions(true)) ?? [])
 	?.map((v) => coerce(v, { includePrerelease: true }))
