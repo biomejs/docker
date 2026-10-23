@@ -9,12 +9,20 @@ Supported architectures: `amd64`, `arm64`
 
 Docker images are available for all versions of Biome starting from `1.7.0`.
 
-Images are tagged with the following format:
+The default image variant is distroless.
+
+Images are tagged with the following formats:
 
 ```sh
 ghcr.io/biomejs/biome:{major}
 ghcr.io/biomejs/biome:{major}.{minor}
 ghcr.io/biomejs/biome:{major}.{minor}.{patch}
+ghcr.io/biomejs/biome:{major}-alpine
+ghcr.io/biomejs/biome:{major}.{minor}-alpine
+ghcr.io/biomejs/biome:{major}.{minor}.{patch}-alpine
+ghcr.io/biomejs/biome:{major}-debian
+ghcr.io/biomejs/biome:{major}.{minor}-debian
+ghcr.io/biomejs/biome:{major}.{minor}.{patch}-debian
 ```
 
 ### Examples
@@ -22,6 +30,18 @@ ghcr.io/biomejs/biome:{major}.{minor}.{patch}
 - `ghcr.io/biomejs/biome:1.9`
 - `ghcr.io/biomejs/biome:1.9.4`
 - `ghcr.io/biomejs/biome:latest`
+- `ghcr.io/biomejs/biome:latest-alpine`
+- `ghcr.io/biomejs/biome:latest-debian`
+- `ghcr.io/biomejs/biome:1.9.4-alpine`
+- `ghcr.io/biomejs/biome:1.9.4-debian`
+
+## Variants
+
+- `distroless` (default): minimal runtime image with no shell or package manager
+- `alpine`: Alpine-based image using Biome's musl Linux binaries
+- `debian`: Debian-based image using Biome's glibc Linux binaries
+
+All variants include the `git` CLI and ship `/etc/gitconfig` with `/code` marked as a safe directory.
 
 ## Usage
 
