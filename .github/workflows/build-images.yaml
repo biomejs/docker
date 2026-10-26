@@ -36,7 +36,7 @@ jobs:
     concurrency: build-images-${{ matrix.versions.patch }}-arm64
     permissions:
       packages: write
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     strategy:
       matrix:
         versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
@@ -76,7 +76,7 @@ jobs:
     concurrency: build-images-${{ matrix.versions.patch }}-amd64
     permissions:
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         versions: ${{ fromJson(needs.generate-jobs.outputs.biome-versions) }}
@@ -113,7 +113,7 @@ jobs:
   stitch-images:
     name: Stitch images (${{ matrix.versions.patch }})
     needs: [generate-jobs, build-images-arm64, build-images-amd64]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       packages: write
     if: ${{ github.event_name != 'pull_request' }}
