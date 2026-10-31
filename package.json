@@ -1,8 +1,12 @@
 {
 	"name": "biome-docker",
 	"type": "module",
+	"packageManager": "pnpm@12.16.1",
+	"scripts": {
+		"generate-versions": "node ./scripts/generate-versions.ts"
+	},
 	"devDependencies": {
-		"@types/bun": "latest",
+		"@types/node": "26.6.6",
 		"@types/semver": "7.7.1"
 	},
 	"peerDependencies": {
