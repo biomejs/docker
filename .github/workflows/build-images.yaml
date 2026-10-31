@@ -66,7 +66,7 @@ jobs:
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-arm64
           file: Dockerfile
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-arm64
-          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64
+          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-arm64,ignore-error=true
           build-args: |
             ARCH=arm64
             BIOME_VERSION=${{ matrix.versions.patch }}
@@ -106,7 +106,7 @@ jobs:
           tags: ghcr.io/biomejs/biome:${{ matrix.versions.patch }}-amd64
           file: Dockerfile
           cache-from: type=gha,scope=${{ matrix.versions.patch}}-amd64
-          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.versions.patch}}-amd64,ignore-error=true
           build-args: |
             ARCH=x64
             BIOME_VERSION=${{ matrix.versions.patch }}
