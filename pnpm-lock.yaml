@@ -167,7 +167,7 @@ importers:
   .:
     dependencies:
       '@biomejs/biome':
-        specifier: ^2.6.4
+        specifier: 2.6.4
         version: 2.6.4
       '@biomejs/version-utils':
         specifier: 0.4.0
