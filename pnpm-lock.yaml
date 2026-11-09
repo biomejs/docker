@@ -173,8 +173,8 @@ importers:
         specifier: 0.4.0
         version: 0.4.0
       semver:
-        specifier: 7.8.5
-        version: 7.8.5
+        specifier: 7.8.6
+        version: 7.8.6
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -386,8 +386,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  semver@7.8.5:
-    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -455,7 +455,7 @@ snapshots:
 
   '@biomejs/version-utils@0.4.0':
     dependencies:
-      semver: 7.8.5
+      semver: 7.8.6
       undici: 6.29.1
       yaml: 2.9.1
 
@@ -525,7 +525,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  semver@7.8.5: {}
+  semver@7.8.6: {}
 
   typescript@7.0.2:
     optionalDependencies:
